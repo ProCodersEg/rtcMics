@@ -4,9 +4,6 @@ const bodyParser = require('body-parser');
 const RtcTokenBuilder = require("../src/RtcTokenBuilder2").RtcTokenBuilder;
 const RtcRole = require("../src/RtcTokenBuilder2").Role;
 
-
-//const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
-
 const app = express();
 const port = process.env.PORT || 3000;
 
