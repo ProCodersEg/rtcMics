@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-
+const axios = require('axios');
 const RtcTokenBuilder = require("../src/RtcTokenBuilder2").RtcTokenBuilder;
 const RtcRole = require("../src/RtcTokenBuilder2").Role;
 
@@ -48,6 +48,34 @@ app.post('/fetch_rtc_token', (req, res) => {
     console.log(`Generated Token: ${token}`); // Log token for debugging
 
     res.json({ token }); // Send token in response
+});
+
+// Endpoint to set kicking rule
+app.post('/set_kicking_rule', async (req, res) => {
+    const { uid, channelName, time } = req.body;
+
+    if (!uid || !channelName || !time) {
+        return res.status(400).send('Missing parameters');
+    }
+
+    try {
+        const response = await axios.post('https://api.agora.io/dev/v1/kicking-rule', {
+            appid: appId,
+            cname: channelName,
+            uid: uid,
+            time: time
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${Buffer.from(`${appId}:${appCertificate}`).toString('base64')}`
+            }
+        });
+
+        res.json(response.data);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Failed to set kicking rule');
+    }
 });
 
 app.listen(port, () => {
