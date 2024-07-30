@@ -50,3 +50,8 @@ app.post('/fetch_rtc_token', (req, res) => {
 
     res.json({ token }); // Send token in response
 });
+
+app.listen(port, () => {
+    console.log(Token server listening at http://localhost:${port});
+});
+
