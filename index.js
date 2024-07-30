@@ -51,6 +51,7 @@ app.post('/fetch_rtc_token', (req, res) => {
     res.json({ token }); // Send token in response
 });
 
+// Endpoint to kick a user from a channel
 app.post('/kick_user', async (req, res) => {
     const { appid, cname, uid, ip, time, time_in_seconds, privileges } = req.body;
 
@@ -71,17 +72,19 @@ app.post('/kick_user', async (req, res) => {
     try {
         const response = await axios.post('https://api.agora.io/dev/v1/kicking-rule', data, {
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${Buffer.from(`${appId}:${appCertificate}`).toString('base64')}`
             }
         });
         console.log('Kicking response:', response.data);
         res.json(response.data);
     } catch (error) {
-        console.error('Error kicking user:', {
-            message: error.message,
-            response: error.response ? error.response.data : null
-        });
+        console.error('Error kicking user:', error.response ? error.response.data : error.message);
         res.status(500).send('Error kicking user');
     }
 });
 
+// Start the server
+app.listen(port, () => {
+    console.log(`Server listening at http://localhost:${port}`);
+});
