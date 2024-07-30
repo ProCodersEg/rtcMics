@@ -3,7 +3,6 @@ const bodyParser = require('body-parser');
 
 const RtcTokenBuilder = require("../src/RtcTokenBuilder2").RtcTokenBuilder;
 const RtcRole = require("../src/RtcTokenBuilder2").Role;
-const AgoraAdmin = require('agora-admin'); // You may need to install this package if it exists or use Agora's REST API directly
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -16,31 +15,6 @@ const appCertificate = 'b811e0a60bd04e48b01fbb4bf5d63ca9'; // Replace with your 
 const tokenExpirationInSecond = 3600;
 
 app.use(bodyParser.json());
-
-// Initialize Agora Admin
-const admin = new AgoraAdmin({
-    appId: appId,
-    appCertificate: appCertificate,
-    // You may need to provide more configuration here
-});
-
-app.post('/kick_user', async (req, res) => {
-    const { uid, channelName } = req.body;
-
-    if (!uid || !channelName) {
-        return res.status(400).send('Missing parameters');
-    }
-
-    try {
-        await admin.kickUser({
-            uid: uid,
-            channelName: channelName
-        });
-        res.status(200).send('User kicked successfully');
-    } catch (error) {
-        res.status(500).send('Error kicking user: ' + error.message);
-    }
-});
 
 // Endpoint to fetch or renew RTC token
 app.post('/fetch_rtc_token', (req, res) => {
