@@ -51,39 +51,33 @@ app.post('/fetch_rtc_token', (req, res) => {
     res.json({ token }); // Send token in response
 });
 
-// Endpoint to kick a user
 app.post('/kick_user', async (req, res) => {
-    const { channelName, uid } = req.body;
-
-    if (!channelName || !uid) {
-        return res.status(400).send('Missing parameters');
+    const { uid } = req.body;
+    if (!uid) {
+        return res.status(400).send('Missing UID');
     }
 
     const options = {
         method: 'DELETE',
         url: 'http://api.sd-rtn.com/dev/v1/kicking-rule',
         headers: {
-            Authorization: `Basic ${Buffer.from(`${process.env.AGORA_APP_ID}:${process.env.AGORA_APP_CERTIFICATE}`).toString('base64')}`,
+            Authorization: '', // Your authorization header if required
             Accept: 'application/json',
         },
         data: {
-            cname: channelName,
-            uid: uid,
-            // Add any other necessary parameters as per Agora API requirements
+            uid: uid
         }
     };
 
     try {
         const { data } = await axios.request(options);
-        console.log(data);
         res.json(data);
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Failed to kick user');
+        console.error('Error while kicking user:', error);
+        res.status(500).send('Error while kicking user');
     }
 });
 
-// Start the server
 app.listen(port, () => {
-    console.log(`Token server listening at http://localhost:${port}`);
+    console.log(`Server listening at http://localhost:${port}`);
 });
