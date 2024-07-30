@@ -1,63 +1,20 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const axios = require('axios'); // Add axios for making HTTP requests
+const axios = require('axios');
 const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Hard-coded Agora App ID and App Certificate
-const appId = 'db5971c7ec8a45fb895ae1cc3ad3cf4b'; // Replace with your Agora App ID
-const appCertificate = 'b811e0a60bd04e48b01fbb4bf5d63ca9'; // Replace with your Agora App Certificate
-
+const appId = 'db5971c7ec8a45fb895ae1cc3ad3cf4b'; 
+// Replace with your Agora App ID 
+const appCertificate = 'b811e0a60bd04e48b01fbb4bf5d63ca9'; 
+// Replace with your Agora App Certificate
 
 // Token expiration time in seconds
 const tokenExpirationInSecond = 3600;
 
 app.use(bodyParser.json());
-
-// Endpoint to kick a user
-app.post('/kick_user', (req, res) => {
-    const { appId, channelName, uid, ip, time, timeInSeconds } = req.body;
-
-    if (!appId || !time || (!timeInSeconds && !time)) {
-        return res.status(400).send('Missing required parameters');
-    }
-
-    const data = {
-        appid: appId,
-        cname: channelName,
-        uid: uid,
-        ip: ip,
-        time: time,
-        time_in_seconds: timeInSeconds,
-        privileges: [
-            "join_channel",
-            "publish_audio",
-            "publish_video"
-        ]
-    };
-
-    const config = {
-        method: 'post',
-        url: 'https://api.agora.io/dev/v1/kicking-rule',
-        headers: { },
-        data: data
-    };
-
-    axios(config)
-        .then(response => {
-            res.json(response.data);
-        })
-        .catch(error => {
-            res.status(500).send(error.message);
-        });
-});
-
-// Start the server
-app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`);
-});
 
 // Endpoint to fetch or renew RTC token
 app.post('/fetch_rtc_token', (req, res) => {
@@ -94,7 +51,39 @@ app.post('/fetch_rtc_token', (req, res) => {
     res.json({ token }); // Send token in response
 });
 
+// Endpoint to kick a user from a channel
+app.post('/kick_user', async (req, res) => {
+    const { appid, cname, uid, ip, time, time_in_seconds, privileges } = req.body;
+
+    if (!appid || !cname || !time || !time_in_seconds || !privileges) {
+        return res.status(400).send('Missing parameters');
+    }
+
+    const data = {
+        appid: appid,
+        cname: cname,
+        uid: uid || null,
+        ip: ip || null,
+        time: time,
+        time_in_seconds: time_in_seconds,
+        privileges: privileges
+    };
+
+    try {
+        const response = await axios.post('https://api.agora.io/dev/v1/kicking-rule', data, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        console.log('Kicking response:', response.data);
+        res.json(response.data);
+    } catch (error) {
+        console.error('Error kicking user:', error);
+        res.status(500).send('Error kicking user');
+    }
+});
+
 // Start the server
 app.listen(port, () => {
-    console.log(`Token server listening at http://localhost:${port}`);
+    console.log(`Server listening at http://localhost:${port}`);
 });
