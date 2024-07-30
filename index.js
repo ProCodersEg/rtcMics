@@ -51,40 +51,39 @@ app.post('/fetch_rtc_token', (req, res) => {
     res.json({ token }); // Send token in response
 });
 
-// Endpoint to kick a user from a channel
+// Endpoint to kick a user
 app.post('/kick_user', async (req, res) => {
-    const { appid, cname, uid, ip, time, time_in_seconds, privileges } = req.body;
+    const { channelName, uid } = req.body;
 
-    if (!appid || !cname || !time || !time_in_seconds || !privileges) {
+    if (!channelName || !uid) {
         return res.status(400).send('Missing parameters');
     }
 
-    const data = {
-        appid: appid,
-        cname: cname,
-        uid: uid || null,
-        ip: ip || null,
-        time: time,
-        time_in_seconds: time_in_seconds,
-        privileges: privileges
+    const options = {
+        method: 'DELETE',
+        url: 'http://api.sd-rtn.com/dev/v1/kicking-rule',
+        headers: {
+            Authorization: `Basic ${Buffer.from(`${process.env.AGORA_APP_ID}:${process.env.AGORA_APP_CERTIFICATE}`).toString('base64')}`,
+            Accept: 'application/json',
+        },
+        data: {
+            cname: channelName,
+            uid: uid,
+            // Add any other necessary parameters as per Agora API requirements
+        }
     };
 
     try {
-        const response = await axios.post('https://api.agora.io/dev/v1/kicking-rule', data, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Basic ${Buffer.from(`${appId}:${appCertificate}`).toString('base64')}`
-            }
-        });
-        console.log('Kicking response:', response.data);
-        res.json(response.data);
+        const { data } = await axios.request(options);
+        console.log(data);
+        res.json(data);
     } catch (error) {
-        console.error('Error kicking user:', error.response ? error.response.data : error.message);
-        res.status(500).send('Error kicking user');
+        console.error(error);
+        res.status(500).send('Failed to kick user');
     }
 });
 
 // Start the server
 app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`);
+    console.log(`Token server listening at http://localhost:${port}`);
 });
