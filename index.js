@@ -50,34 +50,3 @@ app.post('/fetch_rtc_token', (req, res) => {
 
     res.json({ token }); // Send token in response
 });
-
-app.post('/kick_user', async (req, res) => {
-    const { uid } = req.body;
-    if (!uid) {
-        return res.status(400).send('Missing UID');
-    }
-
-    const options = {
-        method: 'DELETE',
-        url: 'http://api.sd-rtn.com/dev/v1/kicking-rule',
-        headers: {
-            Authorization: '', // Your authorization header if required
-            Accept: 'application/json',
-        },
-        data: {
-            uid: uid
-        }
-    };
-
-    try {
-        const { data } = await axios.request(options);
-        res.json(data);
-    } catch (error) {
-        console.error('Error while kicking user:', error);
-        res.status(500).send('Error while kicking user');
-    }
-});
-
-app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`);
-});
