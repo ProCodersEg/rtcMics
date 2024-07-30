@@ -45,11 +45,11 @@ app.post('/fetch_rtc_token', (req, res) => {
         privilegeExpiredTs
     );
 
-    console.log(`Generated Token: ${token}`); // Log token for debugging
+    console.log(Generated Token: ${token}); // Log token for debugging
 
     res.json({ token }); // Send token in response
 });
 
 app.listen(port, () => {
-    console.log(`Token server listening at http://localhost:${port}`);
+    console.log(Token server listening at http://localhost:${port});
 });
