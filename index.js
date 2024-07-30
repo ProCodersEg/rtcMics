@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const axios = require('axios');
+
 const RtcTokenBuilder = require("../src/RtcTokenBuilder2").RtcTokenBuilder;
 const RtcRole = require("../src/RtcTokenBuilder2").Role;
 
@@ -13,6 +13,9 @@ const appCertificate = 'b811e0a60bd04e48b01fbb4bf5d63ca9'; // Replace with your 
 
 // Token expiration time in seconds
 const tokenExpirationInSecond = 3600;
+
+// Mock database for user activity
+let userActivity = {}; // Store activity timestamps
 
 app.use(bodyParser.json());
 
@@ -45,37 +48,32 @@ app.post('/fetch_rtc_token', (req, res) => {
         privilegeExpiredTs
     );
 
+    // Update user activity timestamp
+    userActivity[uid] = currentTimestamp;
+
     console.log(`Generated Token: ${token}`); // Log token for debugging
 
     res.json({ token }); // Send token in response
 });
 
-// Endpoint to set kicking rule
-app.post('/set_kicking_rule', async (req, res) => {
-    const { uid, channelName, time } = req.body;
+// Endpoint to kick inactive users
+app.post('/kick_inactive_users', (req, res) => {
+    const { channelName, inactivityThreshold } = req.body; // inactivityThreshold in seconds
 
-    if (!uid || !channelName || !time) {
+    if (!channelName || !inactivityThreshold) {
         return res.status(400).send('Missing parameters');
     }
 
-    try {
-        const response = await axios.post('https://api.agora.io/dev/v1/kicking-rule', {
-            appid: appId,
-            cname: channelName,
-            uid: uid,
-            time: time
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Basic ${Buffer.from(`${appId}:${appCertificate}`).toString('base64')}`
-            }
-        });
-
-        res.json(response.data);
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Failed to set kicking rule');
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    for (const [uid, lastActivity] of Object.entries(userActivity)) {
+        if (currentTimestamp - lastActivity > inactivityThreshold) {
+            // Logic to kick user from the channel
+            // This will depend on your Agora implementation
+            console.log(`User ${uid} kicked from channel ${channelName} due to inactivity`);
+        }
     }
+
+    res.send('Checked for inactive users');
 });
 
 app.listen(port, () => {
