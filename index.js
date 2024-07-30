@@ -1,15 +1,15 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-
-const RtcTokenBuilder = require("../src/RtcTokenBuilder2").RtcTokenBuilder;
-const RtcRole = require("../src/RtcTokenBuilder2").Role;
+const axios = require('axios');
+const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Hard-coded Agora App ID and App Certificate
-const appId = 'db5971c7ec8a45fb895ae1cc3ad3cf4b'; // Replace with your Agora App ID
-const appCertificate = 'b811e0a60bd04e48b01fbb4bf5d63ca9'; // Replace with your Agora App Certificate
+const appId = 'db5971c7ec8a45fb895ae1cc3ad3cf4b'; 
+// Replace with your Agora App ID 
+const appCertificate = 'b811e0a60bd04e48b01fbb4bf5d63ca9'; 
+// Replace with your Agora App Certificate
 
 // Token expiration time in seconds
 const tokenExpirationInSecond = 3600;
@@ -36,6 +36,7 @@ app.post('/fetch_rtc_token', (req, res) => {
         return res.status(400).send('Invalid role');
     }
 
+    // Generate Token
     const token = RtcTokenBuilder.buildTokenWithUid(
         appId,
         appCertificate,
@@ -45,11 +46,38 @@ app.post('/fetch_rtc_token', (req, res) => {
         privilegeExpiredTs
     );
 
-    console.log(Generated Token: ${token}); // Log token for debugging
+    console.log(`Generated Token: ${token}`); // Log token for debugging
 
     res.json({ token }); // Send token in response
 });
 
+app.post('/kick_user', async (req, res) => {
+    const { uid } = req.body;
+    if (!uid) {
+        return res.status(400).send('Missing UID');
+    }
+
+    const options = {
+        method: 'DELETE',
+        url: 'http://api.sd-rtn.com/dev/v1/kicking-rule',
+        headers: {
+            Authorization: '', // Your authorization header if required
+            Accept: 'application/json',
+        },
+        data: {
+            uid: uid
+        }
+    };
+
+    try {
+        const { data } = await axios.request(options);
+        res.json(data);
+    } catch (error) {
+        console.error('Error while kicking user:', error);
+        res.status(500).send('Error while kicking user');
+    }
+});
+
 app.listen(port, () => {
-    console.log(Token server listening at http://localhost:${port});
+    console.log(`Server listening at http://localhost:${port}`);
 });
