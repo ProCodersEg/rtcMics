@@ -6,9 +6,9 @@ const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
 const app = express();
 const port = process.env.PORT || 3000;
 
-const appId = 'db5971c7ec8a45fb895ae1cc3ad3cf4b'; 
+const appId = '4e9461ff29ae4b05aea02090efb84d9b'; 
 // Replace with your Agora App ID 
-const appCertificate = 'b811e0a60bd04e48b01fbb4bf5d63ca9'; 
+const appCertificate = '51abc27384e84c4f92636edd8967558e'; 
 // Replace with your Agora App Certificate
 
 // Token expiration time in seconds
